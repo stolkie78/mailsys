@@ -11,8 +11,6 @@ services:
       - "993:993"   # IMAPS
       - "4190:4190" # ManageSieve (filters / forwarding rules)
     volumes:
-      # Named volumes: Postfix/Dovecot need real POSIX semantics (unix sockets,
-      # chmod) that bind mounts on macOS/Windows cannot provide.
       - mail-data:/var/mail/
       - mail-state:/var/mail-state/
       - mail-logs:/var/log/mail/
@@ -27,14 +25,16 @@ services:
       test: "ss --listening --tcp | grep -P 'LISTEN.+:smtp' || exit 1"
       timeout: 3s
       retries: 0
+    networks:
+      - default
 
   roundcube:
     image: roundcube/roundcubemail:1.6.9-apache
     container_name: roundcube
     depends_on:
       - mailserver
-    ports:
-      - "${WEBMAIL_PORT:-8080}:80"
+    expose:
+      - "80"
     environment:
       ROUNDCUBEMAIL_DEFAULT_HOST: ssl://mailserver
       ROUNDCUBEMAIL_DEFAULT_PORT: "993"
@@ -49,6 +49,14 @@ services:
       - ./docker-data/roundcube/www:/var/www/html
       - ./config/roundcube-custom.inc.php:/var/roundcube/config/custom.inc.php:ro
     restart: always
+    networks:
+      - default
+      - caddy-net
+
+networks:
+  default:
+  caddy-net:
+    external: true
 
 volumes:
   mail-data:

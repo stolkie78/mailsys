@@ -1,3 +1,5 @@
 # One domain per line. Used by ./mailctl dkim and ./mailctl dns
 gsit.nl
 setbaas.nl
+readplando.com
+stolkies.com
